@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Razões pra te amar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1e1e2f;
+      color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #e63946;
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+    }
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    select, input[type="text"] {
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+    }
+    .card {
+      background-color: #2c2c3e;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 10px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: scale(1.02);
+    }
+    .card h3 {
+      margin-top: 0;
+      color: #ffb703;
+      text-decoration: underline;
+    }
+    .card p {
+      margin: 5px 0;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background-color: #2c2c3e;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 500px;
+      color: white;
+      text-align: center;
+      position: relative;
+      animation: aparecer 0.5s ease;
+    }
+    .modal-content img {
+      width: 150px;
+      border-radius: 50%;
+      margin-bottom: 15px;
+    }
+    .close-btn {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 20px;
+      cursor: pointer;
+      color: white;
+    }
+    .play-button {
+      background-color: #ffb703;
+      color: #1e1e2f;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 20px auto;
+      display: block;
+      transition: background-color 0.3s;
+    }
+    .play-button:hover {
+      background-color: #e0a300;
+    }
+    @keyframes aparecer {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="play-button" onclick="toggleMusica()">▶ Tocar Música</button>
+
+  <audio id="bgm" loop>
+    <source src="audio/musica.mp3" type="audio/mpeg">
+    Seu navegador não suporta áudio.
+  </audio>
+
+  <header>
+    <h1>Razões para te amar</h1>
+  </header>
+
+  <div class="container">
+    <input type="text" id="busca" placeholder="Buscar razão para te amar..." onkeyup="buscarAutor()">
+    <select id="filtroPais" onchange="filtrarPais()">
+      <option value="">Filtrar por dia</option>
+    </select>
+    <div id="resultado"></div>
+  </div>
+
+  <div id="modal" class="modal" onclick="fecharModal(event)">
+    <div class="modal-content">
+      <span class="close-btn" onclick="document.getElementById('modal').style.display='none'">&times;</span>
+      <img id="modal-img" src="" alt="Foto">
+      <h2 id="modal-nome"></h2>
+      <p id="modal-bio"></p>
+      <p id="modal-ideias"></p>
+    </div>
+  </div>
+
+  <script>
+    const autores = [
+      { nome: "Seu sorriso", pais: "Dia 1", ideias: ["Ilumina tudo", "Me acalma", "É viciante"], bio: "Teu sorriso é abrigo e sol ao mesmo tempo.", imagem: "https://i.imgur.com/Wus7EvM.jpeg" },
+      { nome: "Teu abraço", pais: "Dia 2", ideias: ["Quente", "Seguro", "Verdadeiro"], bio: "Me sinto inteiro toda vez que você me abraça.", imagem: "https://i.imgur.com/6cOrpbq.jpeg" },
+      { nome: "Sua risada", pais: "Dia 3", ideias: ["Contagiante", "Linda", "Me faz rir junto"], bio: "A coisa mais gostosa de ouvir no meu dia.", imagem: "https://i.imgur.com/fo0EGbb.jpeg" },
+      { nome: "Seu jeitinho bobo", pais: "Dia 4", ideias: ["Fofo", "Engraçado", "Único"], bio: "É impossível não sorrir com o seu jeito leve.", imagem: "https://i.imgur.com/TUZTOnw.jpeg" },
+      { nome: "Quando você me chama de amor", pais: "Dia 5", ideias: ["Me derrete", "Soa doce", "Me faz sentir especial"], bio: "É tão simples, mas diz tudo que eu preciso ouvir.", imagem: "https://i.imgur.com/PN2UxDl.jpeg" },
+      { nome: "Seu carinho com os outros", pais: "Dia 6", ideias: ["Gentil", "Respeitoso", "Inspirador"], bio: "Você cuida de todo mundo com o coração.", imagem: "https://i.imgur.com/4PzhVFF.jpeg" },
+      { nome: "O jeito que fala meu nome", pais: "Dia 7", ideias: ["Único", "Doce", "Me faz sorrir"], bio: "Nenhuma outra pessoa fala meu nome como você.", imagem: "https://i.postimg.cc/MM12rm3K/IMG-5116.jpg" },
+      { nome: "Seu toque", pais: "Dia 8", ideias: ["Aconchegante", "Calmo", "Magnético"], bio: "Só de encostar em mim, meu mundo melhora.", imagem: "https://i.postimg.cc/672NCXdZ/IMG-5180.jpg" },
+      { nome: "Como você me olha", pais: "Dia 9", ideias: ["Com ternura", "Com desejo", "Com amor"], bio: "Teu olhar fala mais do que qualquer palavra.", imagem: "https://i.postimg.cc/hQgWFQN8/IMG-5223.jpg" },
+      { nome: "Seu jeitinho dormindo", pais: "Dia 10", ideias: ["Fofo", "Pacífico", "Gracioso"], bio: "É como ver a paz em forma de gente.", imagem: "https://i.postimg.cc/H82GTsCq/IMG-5308.jpg" }
+    ];
+
+    const resultado = document.getElementById('resultado');
+    const filtroPais = document.getElementById('filtroPais');
+
+    function mostrarAutores(lista) {
+      resultado.innerHTML = '';
+      lista.forEach((autor) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.onclick = () => abrirModal(autor);
+        card.innerHTML = `
+          <h3>${autor.nome}</h3>
+          <p><strong>Categoria:</strong> ${autor.pais}</p>
+          <p><strong>Motivos:</strong> ${autor.ideias.join(", ")}</p>
+        `;
+        resultado.appendChild(card);
+      });
+    }
+
+    function abrirModal(autor) {
+      document.getElementById('modal-nome').textContent = autor.nome;
+      document.getElementById('modal-bio').textContent = autor.bio;
+      document.getElementById('modal-img').src = autor.imagem;
+      document.getElementById('modal-ideias').textContent = "Motivos: " + autor.ideias.join(', ');
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function fecharModal(e) {
+      if (e.target.id === 'modal') {
+        document.getElementById('modal').style.display = 'none';
+      }
+    }
+
+    function buscarAutor() {
+      const termo = document.getElementById('busca').value.toLowerCase();
+      const filtrados = autores.filter(a => a.nome.toLowerCase().includes(termo));
+      mostrarAutores(filtrados);
+    }
+
+    function filtrarPais() {
+      const pais = filtroPais.value;
+      const filtrados = pais ? autores.filter(a => a.pais === pais) : autores;
+      mostrarAutores(filtrados);
+    }
+
+    function preencherFiltroPais() {
+      const paises = [...new Set(autores.map(a => a.pais))];
+      paises.forEach(pais => {
+        const opt = document.createElement('option');
+        opt.value = pais;
+        opt.textContent = pais;
+        filtroPais.appendChild(opt);
+      });
+    }
+
+    function toggleMusica() {
+      const musica = document.getElementById('bgm');
+      const botao = document.querySelector('.play-button');
+      if (musica.paused) {
+        musica.play();
+        botao.textContent = "⏸ Pausar Música";
+      } else {
+        musica.pause();
+        botao.textContent = "▶ Tocar Música";
+      }
+    }
+
+    preencherFiltroPais();
+    mostrarAutores(autores);
+  </script>
+</body>
+</html>
